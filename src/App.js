@@ -1,18 +1,55 @@
 import React, { Component } from "react";
-
-import authors from "./data.js";
+import axios from "axios";
 
 // Components
 import Sidebar from "./Sidebar";
 import AuthorsList from "./AuthorsList";
 import AuthorDetail from "./AuthorDetail";
+import Loading from "./Loading";
 
 class App extends Component {
   state = {
-    currentAuthor: null
+    currentAuthor: null,
+    authors: [],
+    loading: true
   };
 
-  selectAuthor = author => this.setState({ currentAuthor: author });
+  async componentDidMount() {
+    try {
+      const response = await axios.get(
+        "https://the-index-api.herokuapp.com/api/authors/"
+      );
+      const author = response.data;
+      this.setState({ authors: author });
+      this.setState({ loading: false });
+      console.log("RESPONSE!!!", author);
+    } catch (err) {
+      console.log("gotcha!", err);
+    }
+  }
+
+  AuthorListFn = () => {
+    if (this.state.loading) {
+      return <Loading />;
+    }
+    return (
+      <AuthorsList
+        authors={this.state.authors}
+        selectAuthor={this.selectAuthor}
+      />
+    );
+  };
+
+  selectAuthor = async author => {
+    const response = await axios.get(
+      `https://the-index-api.herokuapp.com/api/authors/${author.id}/`
+    );
+    const madri = response.data;
+    this.setState({ loading: true });
+    this.setState({ currentAuthor: madri });
+    // console.log("currentauthor", response);
+    this.setState({ loading: false });
+  };
 
   unselectAuthor = () => this.setState({ currentAuthor: null });
 
@@ -20,7 +57,12 @@ class App extends Component {
     if (this.state.currentAuthor) {
       return <AuthorDetail author={this.state.currentAuthor} />;
     } else {
-      return <AuthorsList authors={authors} selectAuthor={this.selectAuthor} />;
+      return (
+        <AuthorsList
+          authors={this.state.authors}
+          selectAuthor={this.selectAuthor}
+        />
+      );
     }
   };
 
