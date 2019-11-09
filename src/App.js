@@ -20,40 +20,30 @@ class App extends Component {
         "https://the-index-api.herokuapp.com/api/authors/"
       );
       const author = response.data;
-      this.setState({ authors: author });
-      this.setState({ loading: false });
+      this.setState({ authors: author, loading: false });
       console.log("RESPONSE!!!", author);
     } catch (err) {
       console.log("gotcha!", err);
     }
   }
-
-  AuthorListFn = () => {
-    if (this.state.loading) {
-      return <Loading />;
-    }
-    return (
-      <AuthorsList
-        authors={this.state.authors}
-        selectAuthor={this.selectAuthor}
-      />
-    );
-  };
-
   selectAuthor = async author => {
-    const response = await axios.get(
-      `https://the-index-api.herokuapp.com/api/authors/${author.id}/`
-    );
-    const madri = response.data;
     this.setState({ loading: true });
-    this.setState({ currentAuthor: madri });
-    // console.log("currentauthor", response);
-    this.setState({ loading: false });
+    try {
+      const response = await axios.get(
+        `https://the-index-api.herokuapp.com/api/authors/${author.id}/`
+      );
+      const madri = response.data;
+      this.setState({ currentAuthor: madri, loading: false });
+      // console.log("currentauthor", response);
+    } catch (err) {
+      console.log("ERROR", err);
+    }
   };
 
   unselectAuthor = () => this.setState({ currentAuthor: null });
 
   getContentView = () => {
+    if (this.state.loading) return <Loading />;
     if (this.state.currentAuthor) {
       return <AuthorDetail author={this.state.currentAuthor} />;
     } else {
